@@ -66,3 +66,34 @@ def userinfo():
     }
 
     return jsonify(response_body), 200
+
+
+@api.route("/reset", methods=["POST"])
+def update_password():
+    if request.method == "POST":
+        # new_password = request.json.get("password")
+        email = request.json.get("email")
+        password = request.json.get("password")
+
+        if not email:
+            return jsonify({"msg": "Missing email in request."}), 400
+        if not password:
+            return jsonify({"msg":"Missing pw in request."}),400
+        
+        user = User.query.filter_by(email=email).first()
+        
+        # Create and set new password
+        # result_str = ''.join(random.choice(string.ascii_letters) for i in range(12))
+        # new_password_hashed = generate_password_hash(result_str)
+        newpass = password
+        password = ph.hash(password)
+        user.password = password
+        db.session.commit()        
+
+        payload = {
+            "msg": "Success. An email will be sent to your account with your temporary password.",
+            "pass": newpass
+        }
+
+        return jsonify(payload), 200
+
